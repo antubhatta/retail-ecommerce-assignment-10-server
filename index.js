@@ -6,15 +6,13 @@ const app = express()
 const cors= require('cors')
 const port=process.env.PORT || 3000
 
-// antu
-// PHtbF2MQlx1ef09V
+
 
 // middleware
 app.use(cors())
 app.use(express.json())
 
-console.log(process.env.DB_USER)
-console.log(process.env.DB_PASS)
+
 
 
 
