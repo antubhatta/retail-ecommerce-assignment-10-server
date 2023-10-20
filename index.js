@@ -73,9 +73,11 @@ async function run() {
     });
 
     // Update a product
-    app.patch("products/:id", async (req, res) => {
+    app.patch("/products/:id", async (req, res) => {
         const id = req.params.id;
         const data = req.body;
+
+        console.log(data)
 
         const filter = { _id: new ObjectId(id) };
         const update = { $set: data };
@@ -95,6 +97,93 @@ async function run() {
       const brand = await productsCollection.deleteMany({});
       return res.json(brand);
     });
+
+
+     // Brands
+     const brandCollection = client.db("productsDB").collection("brand");
+
+     app.get("/brands", async (req, res) => {
+         const cursor = brandCollection.find();
+         const brands = await cursor.toArray();
+         res.send(brands);
+     });
+
+     app.get("/brands/:brandName", async (req, res) => {
+      const id = req.params.brandName;
+      const query = { name: id };
+
+      const product = await brandCollection.findOne(query);
+      res.send(product);
+  });
+
+ 
+     app.post("/brands/many", async (req, res) => {
+      const data = req.body;
+
+      const brand = await brandCollection.insertMany(data);
+      return res.json(brand);
+    });
+ 
+     app.get("/brands/:brandName/products", async (req, res) => {
+         const name = req.params.brandName;
+         const query = { brandName: name };
+ 
+         const products = await productCollection.find(query).toArray();
+ 
+         res.send(products);
+     });
+ 
+
+
+    // Cart collection
+    const cartCollection = client.db("productsDB").collection("Cart");
+
+    app.get("/carts/:userId", async (req, res) => {
+        const userId = req.params.userId;
+        const query = { userId };
+
+        const data = await cartCollection.find(query).toArray();
+
+        res.send(data);
+
+    });
+
+    app.post("/carts", async (req, res) => {
+        const newItem = req.body;
+        const { userId, product } = newItem;
+
+        if ((!userId, !product))
+          return res.status(400).json({
+            status: "error",
+            message: "Missing required fields",
+          });
+
+        const isExists = await cartCollection.findOne(newItem);
+        if (isExists)
+          res.status(400).json({
+            status: "error",
+            message: "Product already exists in the cart",
+          });
+
+        const data = await cartCollection.insertOne(newItem);
+
+        res.send(data);
+
+    });
+
+    app.delete("/carts/:id", async (req, res) => {
+        const id = req.params.id;
+        const filter = { _id: new ObjectId(id) };
+
+        const data = await cartCollection.deleteOne(filter);
+
+        res.send(data);
+  
+    });
+
+
+
+    
 
     
 
